@@ -40,7 +40,7 @@ Textbook Context:
 """
 
 def check_intent(query: str) -> IntentRoute:
-    llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash", temperature=0.0, api_key=settings.GEMINI_API_KEY)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0, api_key=settings.GEMINI_API_KEY)
     structured_llm = llm.with_structured_output(IntentRoute)
     
     prompt = f"Analyze the student's query and determine if it is related to physics, science, or educational wellbeing.\nQuery: {query}"
@@ -70,7 +70,7 @@ def solve_doubt(query: str, chat_history: Optional[List[dict]] = None) -> Socrat
         context_str = "No specific textbook context found. Rely on general Socratic principles, but admit if you lack the textbook text."
 
     # 2. Prepare LLM
-    llm = ChatGoogleGenerativeAI(model="gemini-3.6-flash", temperature=0.2, api_key=settings.GEMINI_API_KEY)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2, api_key=settings.GEMINI_API_KEY)
     structured_llm = llm.with_structured_output(SocraticTutorResponse)
     
     # 3. Prepare Messages
