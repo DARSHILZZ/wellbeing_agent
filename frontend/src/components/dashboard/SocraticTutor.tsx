@@ -22,7 +22,7 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
     }, [messages, loading]);
 
     useEffect(() => {
-        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/ws/socratic';
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/chat/ws/socratic';
         ws.current = new WebSocket(wsUrl);
 
         ws.current.onmessage = (event) => {
