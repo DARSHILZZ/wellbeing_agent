@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import QuizUI from './QuizUI';
 
 export default async function QuizPage() {
   const { data: scoresData } = await supabase
@@ -21,26 +22,12 @@ export default async function QuizPage() {
         date: new Date(item.completed_at).toISOString().split('T')[0],
       }))
     : [
-        { subject: 'Math', score: 60, date: '2023-10-01' },
-        { subject: 'Physics', score: 70, date: '2023-10-05' },
+        { subject: 'Mathematics', score: 85, date: '2026-08-15' },
+        { subject: 'Physics', score: 72, date: '2026-08-12' },
+        { subject: 'Chemistry', score: 90, date: '2026-08-10' },
+        { subject: 'Mathematics', score: 68, date: '2026-08-05' },
+        { subject: 'Computer Science', score: 95, date: '2026-08-01' },
       ];
 
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Quiz History (Supabase)</h1>
-      <div className="space-y-3 mt-4">
-        {quizHistory.map((quiz: any, index: number) => (
-          <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-gray-800 text-lg">{quiz.subject}</div>
-              <div className="text-sm text-gray-500">{quiz.date}</div>
-            </div>
-            <div className="text-xl font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
-              {quiz.score}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  return <QuizUI quizHistory={quizHistory} />;
 }

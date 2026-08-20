@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 
 export default function StudentsPage() {
   const mockStudents = [
@@ -41,7 +42,7 @@ export default function StudentsPage() {
               </tr>
             </thead>
             <tbody>
-              {mockStudents.map((student, index) => (
+              {mockStudents.map((student) => (
                 <tr key={student.id} className="border-b border-slate-100 dark:border-zinc-800/50 hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors">
                   <td className="p-4 font-medium text-slate-800 dark:text-zinc-200">{student.name}</td>
                   <td className="p-4 text-slate-600 dark:text-zinc-400">{student.grade}</td>
@@ -56,7 +57,12 @@ export default function StudentsPage() {
                   </td>
                   <td className="p-4 text-slate-500 text-sm">{student.lastActive}</td>
                   <td className="p-4">
-                    <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">View Profile</button>
+                    <Link 
+                      href={`/teacher/students/${student.id}`}
+                      className="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      View Profile
+                    </Link>
                   </td>
                 </tr>
               ))}
