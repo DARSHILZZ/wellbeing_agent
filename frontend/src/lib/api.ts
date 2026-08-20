@@ -19,7 +19,11 @@ export const fetchAdaptivePractice = async (sessionId: string) => {
     return res.data;
 };
 
-export const chatSocratic = async (message: string, sessionId: string) => {
-    const res = await api.post(`/chat/socratic`, { message, session_id: sessionId });
+export const chatSocratic = async (query: string, studentId: string, chatHistory: any[] = []) => {
+    const res = await api.post(`/chat/socratic`, { 
+        query: query, 
+        student_id: studentId,
+        chat_history: chatHistory 
+    });
     return res.data;
 };

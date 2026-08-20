@@ -1,97 +1,125 @@
 'use client';
-import { useState } from 'react';
-import { BookOpen, Send, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { BookOpen, Send, Loader2, Sparkles } from 'lucide-react';
 import { chatSocratic } from '@/lib/api';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
 
-export default function SocraticTutor() {
+export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate?: (sentiment: str) => void }) {
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, loading]);
 
     const handleSend = async () => {
         if (!input.trim()) return;
         
         const userMsg = { role: 'user', content: input };
+        
+        // Save current history before appending the new message
+        const chatHistory = [...messages];
+        
         setMessages((prev) => [...prev, userMsg]);
         setInput('');
         setLoading(true);
 
         try {
-            const res = await chatSocratic(input, 'test-session-123');
+            // Using a dummy studentId for now. Real implementation would fetch from context/auth.
+            const res = await chatSocratic(input, 'student-123', chatHistory);
             const aiMsg = { 
                 role: 'ai', 
                 content: res.socratic_response, 
                 citations: res.citations 
             };
             setMessages((prev) => [...prev, aiMsg]);
+            
+            if (onSentimentUpdate && res.wellbeing_sentiment) {
+                onSentimentUpdate(res.wellbeing_sentiment);
+            }
         } catch (error) {
             console.error(error);
+            const errorMsg = { role: 'ai', content: "I'm having trouble connecting to my knowledge base right now. Could you try asking again?" };
+            setMessages((prev) => [...prev, errorMsg]);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="bg-zinc-50/50 border border-zinc-100 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
+        <Card className="shadow-sm border-zinc-100 overflow-hidden flex flex-col h-[550px]">
+            <CardHeader className="bg-zinc-50 border-b border-zinc-100 py-4 flex flex-row items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
                     <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                    <h3 className="font-bold text-lg">Socratic Tutor</h3>
-                    <p className="text-sm text-zinc-500">I'll guide you to the answer, but I won't give it to you.</p>
+                    <CardTitle className="text-lg">Socratic Tutor</CardTitle>
+                    <p className="text-sm text-zinc-500 font-normal mt-0.5">I guide you to answers using textbook sources.</p>
                 </div>
-            </div>
+            </CardHeader>
 
-            <div className="bg-white border border-zinc-100 rounded-2xl p-4 flex flex-col h-[400px]">
-                <div className="flex-1 overflow-y-auto flex flex-col gap-4 pr-2">
+            <CardContent className="flex-1 p-0 flex flex-col relative overflow-hidden bg-white">
+                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-full text-zinc-400">
-                            <BookOpen className="w-8 h-8 mb-2 opacity-50" />
+                            <Sparkles className="w-8 h-8 mb-3 opacity-50 text-blue-400" />
                             <p>Ask a physics question to start.</p>
                         </div>
                     )}
                     {messages.map((msg, i) => (
                         <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                            <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-sm leading-relaxed ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-zinc-100 text-zinc-900 rounded-bl-sm'}`}>
+                            <div className={`px-5 py-3 rounded-2xl max-w-[85%] text-sm leading-relaxed shadow-sm ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-zinc-100/80 text-zinc-900 rounded-bl-sm border border-zinc-200/50'}`}>
                                 {msg.content}
                             </div>
                             {msg.citations && msg.citations.length > 0 && (
-                                <div className="mt-2 text-xs text-zinc-500 flex flex-col gap-1 border border-zinc-100 p-2 rounded-lg bg-white shadow-sm w-fit max-w-[85%]">
-                                    <div className="font-semibold flex items-center gap-1 text-blue-600">
-                                        <BookOpen className="w-3 h-3" /> Citation: {msg.citations[0].source} (p.{msg.citations[0].page})
-                                    </div>
-                                    <div className="italic text-zinc-400">"{msg.citations[0].snippet}"</div>
+                                <div className="mt-2 text-xs flex flex-wrap gap-2 max-w-[85%]">
+                                    {msg.citations.map((cite: any, idx: number) => (
+                                        <Badge key={idx} className="bg-blue-50 text-blue-700 border-blue-100 font-medium px-2.5 py-1">
+                                            <BookOpen className="w-3 h-3 mr-1.5" />
+                                            {cite.source}, Ch {cite.chapter} (pg {cite.page})
+                                        </Badge>
+                                    ))}
                                 </div>
                             )}
                         </div>
                     ))}
                     {loading && (
-                        <div className="flex items-center gap-2 text-zinc-400 text-sm">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            Thinking...
+                        <div className="flex items-center gap-2 text-zinc-500 text-sm bg-zinc-50 border border-zinc-100 px-4 py-2.5 rounded-full w-fit">
+                            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                            Consulting textbook sources...
                         </div>
                     )}
+                    <div ref={messagesEndRef} />
                 </div>
 
-                <div className="mt-4 flex items-center bg-zinc-50 border border-zinc-200 rounded-full px-4 py-2 focus-within:border-blue-500 focus-within:bg-white transition-colors">
-                    <input 
+                <div className="p-4 bg-white border-t border-zinc-100 flex items-center gap-2">
+                    <Input 
                         type="text" 
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="What's on your mind?"
-                        className="flex-1 bg-transparent outline-none text-sm"
+                        placeholder="What's confusing you?"
+                        className="flex-1 bg-zinc-50/50 border-zinc-200 focus-visible:ring-blue-500"
+                        disabled={loading}
                     />
-                    <button 
+                    <Button 
                         onClick={handleSend}
-                        className="text-blue-600 hover:text-blue-700 p-2"
                         disabled={loading || !input.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 w-10 h-10 p-0 rounded-full shrink-0"
                     >
                         <Send className="w-4 h-4" />
-                    </button>
+                    </Button>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 }
