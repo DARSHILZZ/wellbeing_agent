@@ -19,3 +19,5 @@ websockets
 langchain-classic
 email-validator
 langchain-community
+groq
+langchain-groq

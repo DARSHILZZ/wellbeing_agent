@@ -115,6 +115,20 @@ export default function QuizUI({ quizHistory }: QuizUIProps) {
             </tbody>
           </table>
         </div>
+        
+        {/* Adaptive Mode Prompt */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border border-violet-200/50 dark:border-violet-900/50 rounded-xl flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-violet-700 dark:text-violet-300">Need more practice?</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Try our new AI-powered Adaptive Quiz tailored to your weaknesses.</p>
+          </div>
+          <button 
+            className="px-6 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-lg shadow-lg shadow-violet-500/30 transition-all active:scale-95"
+            onClick={() => alert("Adaptive Quiz launching... (Connects to /api/v1/practice/adaptive)")}
+          >
+            Start Adaptive Quiz
+          </button>
+        </div>
       </motion.div>
     </div>
   );

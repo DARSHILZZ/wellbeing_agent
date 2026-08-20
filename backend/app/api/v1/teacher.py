@@ -4,12 +4,14 @@ router = APIRouter()
 
 @router.get("/insights")
 async def get_teacher_insights():
-    # Mock insights
+    # Simulated query to mastery records/submission trends
     return {
         "flagged_students": [
-            {"id": "S123", "name": "Alice", "reason": "High frustration in Chapter 9"}
+            {"id": "S123", "name": "Alice Johnson", "reason": "Consecutive low scores in Physics", "severity": "High"},
+            {"id": "S124", "name": "Bob Smith", "reason": "No login for 3 days", "severity": "Medium"}
         ],
         "high_confusion_chapters": [
-            {"chapter": "Ch 9: Force and Laws of Motion", "confusion_score": 0.85}
+            {"chapter": "Newton's Second Law", "confusion_score": 0.85},
+            {"chapter": "Conservation of Energy", "confusion_score": 0.72}
         ]
     }
