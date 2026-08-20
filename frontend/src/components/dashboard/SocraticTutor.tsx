@@ -22,10 +22,13 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
     }, [messages, loading]);
 
     useEffect(() => {
+        let active = true;
         const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/chat/ws/socratic';
-        ws.current = new WebSocket(wsUrl);
+        const websocket = new WebSocket(wsUrl);
+        ws.current = websocket;
 
-        ws.current.onmessage = (event) => {
+        websocket.onmessage = (event) => {
+            if (!active) return;
             try {
                 const res = JSON.parse(event.data);
                 
@@ -53,17 +56,17 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
             }
         };
 
-        ws.current.onerror = (error) => {
+        websocket.onerror = (error) => {
+            if (!active) return;
             console.error("WebSocket Error", error);
-            const errorMsg = { role: 'ai', content: "Lost connection to the tutor. Please refresh." };
+            const errorMsg = { role: 'ai', content: "Lost connection to the tutor. Please try again." };
             setMessages((prev) => [...prev, errorMsg]);
             setLoading(false);
         };
 
         return () => {
-            if (ws.current) {
-                ws.current.close();
-            }
+            active = false;
+            websocket.close();
         };
     }, [onSentimentUpdate]);
 
