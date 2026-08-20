@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import PerformanceUI from './PerformanceUI';
 
 export default async function PerformancePage() {
   const { data: scores } = await supabase
@@ -13,15 +14,5 @@ export default async function PerformancePage() {
     else overallPerformance = 'Needs Improvement';
   }
 
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Performance (Supabase)</h1>
-      <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-        <p className="text-gray-700">
-          <strong>Overall Performance:</strong>{' '}
-          <span className="text-orange-600 font-semibold">{overallPerformance}</span>
-        </p>
-      </div>
-    </div>
-  );
+  return <PerformanceUI scores={scores} overallPerformance={overallPerformance} />;
 }
