@@ -1,17 +1,17 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { BookOpen, Send, Loader2, Sparkles } from 'lucide-react';
-import { chatSocratic } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 
-export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate?: (sentiment: str) => void }) {
+export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate?: (sentiment: string) => void }) {
     const [messages, setMessages] = useState<any[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const ws = useRef<WebSocket | null>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -21,8 +21,54 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
         scrollToBottom();
     }, [messages, loading]);
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    useEffect(() => {
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/api/v1/ws/socratic';
+        ws.current = new WebSocket(wsUrl);
+
+        ws.current.onmessage = (event) => {
+            try {
+                const res = JSON.parse(event.data);
+                
+                if (res.error) {
+                    const errorMsg = { role: 'ai', content: res.error };
+                    setMessages((prev) => [...prev, errorMsg]);
+                    setLoading(false);
+                    return;
+                }
+
+                const aiMsg = { 
+                    role: 'ai', 
+                    content: res.socratic_response, 
+                    citations: res.citations 
+                };
+                setMessages((prev) => [...prev, aiMsg]);
+                
+                if (onSentimentUpdate && res.wellbeing_sentiment) {
+                    onSentimentUpdate(res.wellbeing_sentiment);
+                }
+            } catch (error) {
+                console.error("Error parsing WebSocket message", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        ws.current.onerror = (error) => {
+            console.error("WebSocket Error", error);
+            const errorMsg = { role: 'ai', content: "Lost connection to the tutor. Please refresh." };
+            setMessages((prev) => [...prev, errorMsg]);
+            setLoading(false);
+        };
+
+        return () => {
+            if (ws.current) {
+                ws.current.close();
+            }
+        };
+    }, [onSentimentUpdate]);
+
+    const handleSend = () => {
+        if (!input.trim() || !ws.current) return;
         
         const userMsg = { role: 'user', content: input };
         
@@ -34,23 +80,15 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
         setLoading(true);
 
         try {
-            // Using a dummy studentId for now. Real implementation would fetch from context/auth.
-            const res = await chatSocratic(input, 'student-123', chatHistory);
-            const aiMsg = { 
-                role: 'ai', 
-                content: res.socratic_response, 
-                citations: res.citations 
-            };
-            setMessages((prev) => [...prev, aiMsg]);
-            
-            if (onSentimentUpdate && res.wellbeing_sentiment) {
-                onSentimentUpdate(res.wellbeing_sentiment);
-            }
+            ws.current.send(JSON.stringify({
+                query: input,
+                student_id: 'student-123',
+                chat_history: chatHistory
+            }));
         } catch (error) {
             console.error(error);
-            const errorMsg = { role: 'ai', content: "I'm having trouble connecting to my knowledge base right now. Could you try asking again?" };
+            const errorMsg = { role: 'ai', content: "I'm having trouble connecting right now. Could you try asking again?" };
             setMessages((prev) => [...prev, errorMsg]);
-        } finally {
             setLoading(false);
         }
     };
@@ -123,3 +161,4 @@ export default function SocraticTutor({ onSentimentUpdate }: { onSentimentUpdate
         </Card>
     );
 }
+

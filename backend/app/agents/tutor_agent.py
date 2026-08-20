@@ -19,6 +19,10 @@ class SocraticTutorResponse(BaseModel):
     wellbeing_sentiment: str = Field(description="Detected student sentiment: 'neutral', 'frustrated', 'curious', or 'overwhelmed'")
     suggested_follow_up: str = Field(description="A suggested follow-up topic or question for the UI.")
 
+class IntentRoute(BaseModel):
+    is_educational: bool = Field(description="True if the query is educational or related to science/physics. False if off-topic.")
+    rejection_reason: str = Field(description="Reason for rejection if off-topic, otherwise empty.")
+
 SYSTEM_PROMPT = """You are an expert Socratic tutor specializing in physics and science.
 Your goal is to guide the student to the answer using progressive inquiry and scaffolding.
 DO NOT give the direct answer to homework or conceptual questions.
@@ -34,7 +38,26 @@ Textbook Context:
 {context}
 """
 
+def check_intent(query: str) -> IntentRoute:
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0)
+    structured_llm = llm.with_structured_output(IntentRoute)
+    
+    prompt = f"Analyze the student's query and determine if it is related to physics, science, or educational wellbeing.\nQuery: {query}"
+    
+    return structured_llm.invoke(prompt)
+
 def solve_doubt(query: str, chat_history: Optional[List[dict]] = None) -> SocraticTutorResponse:
+    # 0. Intent Routing Guardrail
+    intent = check_intent(query)
+    if not intent.is_educational:
+        return SocraticTutorResponse(
+            thought_process="User asked an off-topic question.",
+            socratic_response=f"I am a physics and science tutor. I cannot help with that. {intent.rejection_reason}",
+            citations=[],
+            wellbeing_sentiment="neutral",
+            suggested_follow_up="What topic in physics would you like to explore?"
+        )
+
     # 1. Retrieve Context
     raw_contexts = retrieve_grounded_context(query)
     context_str = "\n\n".join(
