@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { setToken, setUserProfile } from "@/lib/auth";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -16,39 +17,70 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!isSupabaseConfigured()) {
+      setError(
+        "Supabase credentials are not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local"
+      );
+      return;
+    }
+
     setLoading(true);
-    
+
     try {
-      // 1. Authenticate with Supabase
+      // 1. Authenticate strictly with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (authError) throw new Error(authError.message);
-      if (!authData.user) throw new Error("Login failed.");
+      if (authError) {
+        throw new Error(authError.message || "Invalid email or password.");
+      }
 
-      // 2. Fetch user's role from profiles
+      if (!authData.user) {
+        throw new Error("Authentication failed. User not found.");
+      }
+
+      // Save access token if session exists
+      if (authData.session?.access_token) {
+        setToken(authData.session.access_token);
+      }
+
+      // 2. Fetch user's profile and role from Supabase DB ('profiles' table)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('id, role, full_name, email')
         .eq('id', authData.user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError) throw new Error("Could not fetch user profile.");
+      if (profileError) {
+        console.warn("Could not query profiles table:", profileError.message);
+      }
 
-      // 3. Route dynamically based on role
-      if (profile.role === 'teacher') {
+      const role = (profile?.role || authData.user.user_metadata?.role || 'student') as 'student' | 'teacher';
+
+      setUserProfile({
+        id: authData.user.id,
+        email: authData.user.email || email,
+        role: role,
+        full_name: profile?.full_name || authData.user.user_metadata?.full_name || email.split('@')[0],
+      });
+
+      // 3. Dynamic role-based redirection
+      if (role === 'teacher') {
         router.push("/teacher");
       } else {
         router.push("/student/profile");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to log in");
+      setError(err.message || "Failed to log in with Supabase.");
     } finally {
       setLoading(false);
     }
   };
+
+  const configured = isSupabaseConfigured();
 
   return (
     <div className="relative z-10 w-full max-w-md mx-auto">
@@ -66,6 +98,13 @@ export default function Login() {
           Welcome Back
         </h2>
         
+        {!configured && (
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl mb-6 text-xs text-center leading-relaxed">
+            <span className="font-semibold block mb-1">⚡ Setup Required</span>
+            Set your Supabase credentials in <code className="bg-amber-500/20 px-1 py-0.5 rounded text-amber-800 dark:text-amber-200">frontend/.env.local</code> to log in with Supabase.
+          </div>
+        )}
+
         {error && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3 rounded-xl mb-6 text-sm text-center backdrop-blur-md">
             {error}
@@ -102,7 +141,7 @@ export default function Login() {
             disabled={loading}
             className="w-full py-3.5 mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:hover:scale-100"
           >
-            {loading ? "Authenticating..." : "Log In"}
+            {loading ? "Authenticating with Supabase..." : "Log In with Supabase"}
           </button>
         </form>
         
@@ -116,3 +155,5 @@ export default function Login() {
     </div>
   );
 }
+
+
