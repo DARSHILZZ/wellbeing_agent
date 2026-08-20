@@ -1,32 +1,40 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface ScoreData {
   score: number;
+  subject?: string;
 }
 
 interface PerformanceUIProps {
-  scores: ScoreData[] | null;
+  scores: ScoreData[];
   overallPerformance: string;
 }
 
 export default function PerformanceUI({ scores, overallPerformance }: PerformanceUIProps) {
-  // 1. Process data for Recharts
-  // If no scores in Supabase, provide fallback data so the chart isn't completely empty
-  const rawData = (scores && scores.length > 0) 
-    ? scores 
-    : [
-        { score: 65 }, { score: 68 }, { score: 75 }, 
-        { score: 72 }, { score: 80 }, { score: 85 }
-      ];
+  const [activeFilter, setActiveFilter] = useState<string>("All");
 
-  // Map into a format Recharts understands { name: 'Quiz 1', score: 85 }
-  const chartData = rawData.map((item, index) => ({
-    name: `Q${index + 1}`,
-    score: Number(item.score)
-  }));
+  // Dynamically get unique subjects for the filter pills
+  const subjects = useMemo(() => {
+    const unique = new Set(scores.map(s => s.subject).filter(Boolean));
+    return ["All", ...Array.from(unique)] as string[];
+  }, [scores]);
+
+  // Filter and map into a format Recharts understands { name: 'Test 1', score: 85 }
+  const chartData = useMemo(() => {
+    let filtered = scores;
+    if (activeFilter !== "All") {
+      filtered = scores.filter(s => s.subject === activeFilter);
+    }
+    
+    return filtered.map((item, index) => ({
+      name: `Test ${index + 1}`,
+      score: Number(item.score)
+    }));
+  }, [scores, activeFilter]);
 
   // Determine accent color based on performance
   const isExcellent = overallPerformance === 'Excellent';
@@ -66,7 +74,26 @@ export default function PerformanceUI({ scores, overallPerformance }: Performanc
         transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
         className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl p-8 rounded-2xl shadow-xl shadow-zinc-950/5 border border-zinc-200/80 dark:border-zinc-800 w-full min-h-[400px] flex flex-col"
       >
-        <h2 className="text-xl font-semibold text-slate-800 dark:text-zinc-100 mb-6">Score History</h2>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <h2 className="text-xl font-semibold text-slate-800 dark:text-zinc-100">Score History</h2>
+          
+          {/* Subject Filters */}
+          <div className="flex flex-wrap gap-2">
+            {subjects.map((subject) => (
+              <button
+                key={subject}
+                onClick={() => setActiveFilter(subject)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeFilter === subject
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/25"
+                    : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700"
+                }`}
+              >
+                {subject}
+              </button>
+            ))}
+          </div>
+        </div>
         
         <div style={{ width: '100%', height: 350, minHeight: 350 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -112,7 +139,7 @@ export default function PerformanceUI({ scores, overallPerformance }: Performanc
                 strokeWidth={3}
                 fillOpacity={1} 
                 fill={`url(#${gradientId})`} 
-                animationDuration={1500}
+                animationDuration={1000}
               />
             </AreaChart>
           </ResponsiveContainer>
