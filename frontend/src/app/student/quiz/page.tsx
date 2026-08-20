@@ -1,17 +1,35 @@
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export default async function QuizPage() {
-  const filePath = path.join(process.cwd(), 'data', 'mockDatabase.json');
-  const fileContents = fs.readFileSync(filePath, 'utf8');
-  const data = JSON.parse(fileContents);
-  const profile = data.studentProfile;
+  const { data: scoresData } = await supabase
+    .from('scores')
+    .select(`
+      id,
+      score,
+      completed_at,
+      quizzes (
+        topic,
+        subject
+      )
+    `)
+    .order('completed_at', { ascending: false });
+
+  const quizHistory = (scoresData && scoresData.length > 0)
+    ? scoresData.map((item: any) => ({
+        subject: item.quizzes?.subject || item.quizzes?.topic || 'General Knowledge',
+        score: item.score,
+        date: new Date(item.completed_at).toISOString().split('T')[0],
+      }))
+    : [
+        { subject: 'Math', score: 60, date: '2023-10-01' },
+        { subject: 'Physics', score: 70, date: '2023-10-05' },
+      ];
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Quiz History</h1>
+      <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-4">Quiz History (Supabase)</h1>
       <div className="space-y-3 mt-4">
-        {profile.quizHistory.map((quiz: any, index: number) => (
+        {quizHistory.map((quiz: any, index: number) => (
           <div key={index} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
             <div>
               <div className="font-semibold text-gray-800 text-lg">{quiz.subject}</div>
