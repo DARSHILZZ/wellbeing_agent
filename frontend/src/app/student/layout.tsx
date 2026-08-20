@@ -1,15 +1,28 @@
 import Link from 'next/link';
+import { User, BarChart, MessageSquare, ClipboardList } from 'lucide-react';
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="p-8 w-full max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
-      <aside className="w-full lg:w-64 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Menu</h2>
+    <div className="flex min-h-screen max-w-7xl mx-auto p-6 gap-6 relative z-10 w-full">
+      <aside className="w-64 bg-slate-50/80 dark:bg-zinc-900/80 backdrop-blur-md rounded-2xl border border-slate-200 dark:border-zinc-800 h-fit p-6 shadow-sm">
+        <h2 className="text-xl font-bold mb-6 text-slate-800 dark:text-zinc-100">Student Portal</h2>
         <nav className="flex flex-col gap-2">
-          <Link href="/student/profile" className="px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">Profile</Link>
-          <Link href="/student/performance" className="px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">Performance</Link>
-          <Link href="/student/chat" className="px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">Socratic Tutor</Link>
-          <Link href="/student/quiz" className="px-4 py-2 rounded-lg hover:bg-gray-50 text-gray-700">Quiz History</Link>
+          <Link href="/student/profile" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 font-medium transition-colors">
+            <User className="w-5 h-5" />
+            Profile
+          </Link>
+          <Link href="/student/performance" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800/50 text-slate-600 dark:text-zinc-400 transition-colors">
+            <BarChart className="w-5 h-5" />
+            Performance
+          </Link>
+          <Link href="/student/chat" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800/50 text-slate-600 dark:text-zinc-400 transition-colors">
+            <MessageSquare className="w-5 h-5" />
+            Socratic Tutor
+          </Link>
+          <Link href="/student/quiz" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800/50 text-slate-600 dark:text-zinc-400 transition-colors">
+            <ClipboardList className="w-5 h-5" />
+            Quiz History
+          </Link>
         </nav>
       </aside>
       <main className="flex-1">
