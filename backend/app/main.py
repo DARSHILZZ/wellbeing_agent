@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import chat, practice, student, teacher
+from app.api.v1 import chat, practice, student, teacher, auth
 from app.core.config import settings
+from app.db.database import engine, Base
+from app.models.user import User # to ensure model is registered
+
+# Create DB tables
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="EduWell API",
@@ -19,6 +24,7 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(chat.router, prefix=f"{settings.API_V1_STR}/chat", tags=["chat"])
 app.include_router(practice.router, prefix=f"{settings.API_V1_STR}/practice", tags=["practice"])
 app.include_router(student.router, prefix=f"{settings.API_V1_STR}/student", tags=["student"])

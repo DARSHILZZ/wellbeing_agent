@@ -7,3 +7,7 @@ langchain-google-genai
 chromadb
 python-dotenv
 httpx
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
