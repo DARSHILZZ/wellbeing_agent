@@ -27,3 +27,17 @@ export const chatSocratic = async (query: string, studentId: string, chatHistory
     });
     return res.data;
 };
+
+export const loginBackend = async (email: string, password: string) => {
+    const formData = new URLSearchParams();
+    formData.append('username', email);
+    formData.append('password', password);
+
+    const res = await api.post('/auth/login', formData, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+    });
+    return res.data;
+};
+

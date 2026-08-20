@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -20,20 +20,34 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     setSuccess(false);
+
+    if (!isSupabaseConfigured()) {
+      setError(
+        "Supabase credentials are not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local"
+      );
+      return;
+    }
+
     setLoading(true);
     
     try {
-      // 1. Register with Supabase Auth
+      // 1. Register with Supabase Auth including metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
       });
 
       if (authError) throw new Error(authError.message);
       if (!authData.user) throw new Error("Registration failed.");
 
-      // 2. Insert into profiles table
-      const { error: profileError } = await supabase.from('profiles').insert([
+      // 2. Ensure profile exists in profiles table
+      const { error: profileError } = await supabase.from('profiles').upsert([
         {
           id: authData.user.id,
           full_name: fullName,
@@ -42,18 +56,29 @@ export default function RegisterPage() {
         }
       ]);
 
-      if (profileError) throw new Error(profileError.message);
+      if (profileError) {
+        console.warn("Profile table update warning:", profileError.message);
+      }
 
       setSuccess(true);
       setTimeout(() => {
         router.push("/login");
       }, 2000);
+
     } catch (err: any) {
-      setError(err.message || "Failed to register");
+      if (err.message === "Failed to fetch") {
+        setError(
+          "Connection failed: Please set valid NEXT_PUBLIC_SUPABASE_URL & NEXT_PUBLIC_SUPABASE_ANON_KEY in frontend/.env.local and restart Next.js server."
+        );
+      } else {
+        setError(err.message || "Failed to register");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const configured = isSupabaseConfigured();
 
   return (
     <div className="relative z-10 w-full max-w-md mx-auto">
@@ -71,6 +96,13 @@ export default function RegisterPage() {
           Create Account
         </h2>
         
+        {!configured && (
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl mb-6 text-xs text-center leading-relaxed">
+            <span className="font-semibold block mb-1">⚡ Setup Required</span>
+            Set your Supabase credentials in <code className="bg-amber-500/20 px-1 py-0.5 rounded text-amber-800 dark:text-amber-200">frontend/.env.local</code> to create accounts.
+          </div>
+        )}
+
         {error && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-3 rounded-xl mb-6 text-sm text-center backdrop-blur-md">
             {error}
@@ -167,3 +199,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+
