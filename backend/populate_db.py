@@ -15,7 +15,7 @@ def populate_mock_data():
 
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-2",
-        api_key=os.getenv("GEMINI_API_KEY")
+        google_api_key=os.getenv("GEMINI_API_KEY")
     )
     vector_store = Chroma(
         collection_name="textbook_content",

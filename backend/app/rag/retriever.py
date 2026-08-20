@@ -15,7 +15,7 @@ from app.core.config import settings
 def get_vector_store() -> Chroma:
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-2", 
-        api_key=settings.GEMINI_API_KEY
+        google_api_key=settings.GEMINI_API_KEY
     )
     vector_store = Chroma(
         collection_name="textbook_content",
