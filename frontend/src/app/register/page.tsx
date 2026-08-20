@@ -62,7 +62,7 @@ export default function RegisterPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/login");
+        router.push("/onboarding");
       }, 2000);
 
     } catch (err: any) {

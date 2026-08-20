@@ -3,9 +3,10 @@ import { ArrowLeft } from "lucide-react";
 import QuizUI from "@/app/student/quiz/QuizUI";
 import { supabase } from "@/lib/supabase";
 
-export default async function StudentProfilePage({ params }: { params: { id: string } }) {
+export default async function StudentProfilePage({ params }: { params: Promise<{ id: string }> }) {
   // Wait for the params object according to Next.js 15+ patterns
-  const studentId = params.id;
+  const resolvedParams = await params;
+  const studentId = resolvedParams.id;
 
   // In the future, you would use studentId to fetch the specific student's quiz history:
   // const { data } = await supabase.from('scores').select('...').eq('student_id', studentId);
