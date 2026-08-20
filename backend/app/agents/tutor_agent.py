@@ -5,6 +5,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from app.rag.retriever import retrieve_grounded_context
+from app.core.config import settings
 
 class Citation(BaseModel):
     source: str = Field(description="Title of the textbook or source")
@@ -39,7 +40,7 @@ Textbook Context:
 """
 
 def check_intent(query: str) -> IntentRoute:
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0, api_key=settings.GEMINI_API_KEY)
     structured_llm = llm.with_structured_output(IntentRoute)
     
     prompt = f"Analyze the student's query and determine if it is related to physics, science, or educational wellbeing.\nQuery: {query}"
@@ -69,7 +70,7 @@ def solve_doubt(query: str, chat_history: Optional[List[dict]] = None) -> Socrat
         context_str = "No specific textbook context found. Rely on general Socratic principles, but admit if you lack the textbook text."
 
     # 2. Prepare LLM
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.2, api_key=settings.GEMINI_API_KEY)
     structured_llm = llm.with_structured_output(SocraticTutorResponse)
     
     # 3. Prepare Messages
