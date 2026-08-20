@@ -13,7 +13,10 @@ def populate_mock_data():
         print("Error: GEMINI_API_KEY environment variable not set.")
         return
 
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-2",
+        api_key=os.getenv("GEMINI_API_KEY")
+    )
     vector_store = Chroma(
         collection_name="textbook_content",
         embedding_function=embeddings,

@@ -11,8 +11,13 @@ CHROMA_PERSIST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirnam
 
 _bm25_retriever_cache = None
 
+from app.core.config import settings
+
 def get_vector_store() -> Chroma:
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004", 
+        api_key=settings.GEMINI_API_KEY
+    )
     vector_store = Chroma(
         collection_name="textbook_content",
         embedding_function=embeddings,
