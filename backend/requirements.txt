@@ -14,8 +14,6 @@ python-multipart
 langchain-chroma
 google-genai
 rank-bm25
-cohere
-langchain-cohere
 cachetools>=5.3.0
 websockets
 langchain-classic

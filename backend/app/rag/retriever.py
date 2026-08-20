@@ -2,9 +2,8 @@ import os
 from typing import List, Dict, Any
 from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_classic.retrievers import EnsembleRetriever, ContextualCompressionRetriever
+from langchain_classic.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
-from langchain_cohere import CohereRerank
 from langchain_core.documents import Document
 
 CHROMA_PERSIST_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "chroma_db")
@@ -52,16 +51,10 @@ def retrieve_grounded_context(query: str, k: int = 3) -> List[Dict[str, Any]]:
         weights=[0.4, 0.6]
     )
     
-    cohere_rerank = CohereRerank(top_n=k, cohere_api_key=settings.COHERE_API_KEY)
-    compression_retriever = ContextualCompressionRetriever(
-        base_compressor=cohere_rerank,
-        base_retriever=ensemble_retriever
-    )
-    
-    compressed_docs = compression_retriever.invoke(query)
+    docs = ensemble_retriever.invoke(query)[:k]
     
     context = []
-    for doc in compressed_docs:
+    for doc in docs:
         metadata = doc.metadata
         context.append({
             "content": doc.page_content,
