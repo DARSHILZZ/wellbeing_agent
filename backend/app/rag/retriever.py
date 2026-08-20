@@ -52,7 +52,7 @@ def retrieve_grounded_context(query: str, k: int = 3) -> List[Dict[str, Any]]:
         weights=[0.4, 0.6]
     )
     
-    cohere_rerank = CohereRerank(top_n=k)
+    cohere_rerank = CohereRerank(top_n=k, cohere_api_key=settings.COHERE_API_KEY)
     compression_retriever = ContextualCompressionRetriever(
         base_compressor=cohere_rerank,
         base_retriever=ensemble_retriever
