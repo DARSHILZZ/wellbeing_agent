@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import ShinyText from '@/components/ShinyText';
+import SocraticTutor from '@/components/dashboard/SocraticTutor';
+
 
 export default async function StudentDashboard() {
   const filePath = path.join(process.cwd(), 'data', 'mockDatabase.json');
@@ -37,22 +39,8 @@ export default async function StudentDashboard() {
         </div>
       </div>
       
-      <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[600px]">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800 border-b pb-4">AI Chat Board</h2>
-        <div className="flex-1 bg-gray-50 rounded-xl p-6 overflow-y-auto mb-4 border border-gray-100 shadow-inner">
-          <div className="bg-white p-5 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 max-w-[85%] mb-4">
-            <ShinyText 
-              text={`Hello ${profile.name}! I am your AI Tutor. Let's work on improving your physics and math scores today.`} 
-              disabled={false} 
-              speed={3} 
-              className="text-gray-800 font-medium text-lg" 
-            />
-          </div>
-        </div>
-        <div className="flex gap-3">
-          <input type="text" placeholder="Type a message to your AI Tutor..." className="flex-1 border border-gray-200 rounded-xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 focus:bg-white transition-colors" />
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm">Send</button>
-        </div>
+      <div className="w-full lg:w-2/3 flex flex-col h-[600px]">
+        <SocraticTutor />
       </div>
     </div>
   );
