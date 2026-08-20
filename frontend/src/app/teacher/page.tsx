@@ -1,0 +1,49 @@
+import fs from 'fs';
+import path from 'path';
+import TiltedCard from '@/components/TiltedCard';
+
+export default async function TeacherDashboard() {
+  const filePath = path.join(process.cwd(), 'data', 'mockDatabase.json');
+  const fileContents = fs.readFileSync(filePath, 'utf8');
+  const data = JSON.parse(fileContents);
+  
+  const weakStudents = data.weakStudents;
+
+  return (
+    <div className="p-8 min-h-screen bg-gray-50">
+      <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">Teacher Dashboard</h1>
+      <h2 className="text-2xl font-semibold mb-6 text-gray-700 text-center">Weak Students</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center max-w-6xl mx-auto">
+        {weakStudents.map((student: any) => (
+          <TiltedCard
+            key={student.id}
+            imageSrc={`https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=300&h=300&auto=format&fit=crop`}
+            altText={student.name}
+            captionText={student.location}
+            containerHeight="300px"
+            containerWidth="300px"
+            imageHeight="300px"
+            imageWidth="300px"
+            rotateAmplitude={12}
+            scaleOnHover={1.05}
+            showTooltip={true}
+            displayOverlayContent={true}
+            overlayContent={
+              <div className="flex flex-col justify-end p-6 w-[300px] h-[300px] rounded-[15px] bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent">
+                <h3 className="text-xl font-bold text-white mb-1 drop-shadow-md">{student.name}</h3>
+                <p className="text-gray-200 text-sm mb-2 drop-shadow-md">{student.institution}</p>
+                <div className="bg-red-500/80 text-white rounded px-2 py-1 text-xs mb-2 w-fit shadow">
+                  Weak: {student.weakSubjects.join(', ')}
+                </div>
+                <p className="text-white font-mono bg-black/60 w-fit px-2 py-1 rounded text-sm border border-white/20 shadow">
+                  Score: {student.score}
+                </p>
+              </div>
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

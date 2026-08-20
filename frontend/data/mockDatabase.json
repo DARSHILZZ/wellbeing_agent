@@ -1,0 +1,50 @@
+{
+  "weakStudents": [
+    {
+      "id": 1,
+      "name": "Alex Johnson",
+      "location": "New York, NY",
+      "institution": "Springfield High",
+      "weakSubjects": ["Math", "Physics"],
+      "score": 65
+    },
+    {
+      "id": 2,
+      "name": "Maria Garcia",
+      "location": "Austin, TX",
+      "institution": "Austin Valley",
+      "weakSubjects": ["Chemistry"],
+      "score": 70
+    },
+    {
+      "id": 3,
+      "name": "James Smith",
+      "location": "London, UK",
+      "institution": "St. Jude's",
+      "weakSubjects": ["History", "Literature"],
+      "score": 55
+    }
+  ],
+  "teacherReports": {
+    "classAverages": {
+      "Math": 82,
+      "Physics": 78,
+      "Chemistry": 80,
+      "History": 85,
+      "Literature": 88
+    },
+    "alerts": [
+      "Alex Johnson is falling behind in Physics.",
+      "James Smith missed the last 2 History assignments."
+    ]
+  },
+  "studentProfile": {
+    "name": "Alex Johnson",
+    "grade": "10th",
+    "quizHistory": [
+      { "subject": "Math", "score": 60, "date": "2023-10-01" },
+      { "subject": "Physics", "score": 70, "date": "2023-10-05" }
+    ],
+    "overallPerformance": "Needs Improvement"
+  }
+}

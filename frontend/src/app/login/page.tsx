@@ -1,104 +1,27 @@
-"use client";
+import Link from 'next/link';
+import Aurora from '@/components/Aurora';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { setToken, getUserRole } from "@/lib/auth";
-
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const router = useRouter();
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    
-    try {
-      const formData = new URLSearchParams();
-      formData.append("username", email);
-      formData.append("password", password);
-
-      const res = await fetch("http://localhost:8000/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const data = await res.json();
-      setToken(data.access_token);
-      
-      const role = getUserRole();
-      if (role === "student") {
-        router.push("/dashboard");
-      } else if (role === "teacher") {
-        router.push("/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to login");
-    }
-  };
-
+export default function Login() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Welcome Back
-        </h2>
-        
-        {error && (
-          <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 text-sm text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition duration-200"
-          >
-            Sign In
-          </button>
-        </form>
-        
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <a href="/register" className="text-blue-600 hover:underline">
-            Register here
-          </a>
-        </p>
+    <div className="relative min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <Aurora 
+          colorStops={['#3A29FF', '#FF94B4', '#FF3232']} 
+          blend={0.5} 
+          amplitude={1.0} 
+          speed={0.5} 
+        />
+      </div>
+      <div className="relative z-10 bg-white/90 backdrop-blur p-8 rounded-xl shadow-xl w-96">
+        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">AI Tutor Login</h1>
+        <div className="space-y-4">
+          <Link href="/teacher" className="block w-full text-center bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            Login as Teacher
+          </Link>
+          <Link href="/student" className="block w-full text-center bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 transition-colors font-medium">
+            Login as Student
+          </Link>
+        </div>
       </div>
     </div>
   );
