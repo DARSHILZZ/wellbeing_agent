@@ -14,7 +14,7 @@ from app.core.config import settings
 
 def get_vector_store() -> Chroma:
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004", 
+        model="models/gemini-embedding-2", 
         api_key=settings.GEMINI_API_KEY
     )
     vector_store = Chroma(
